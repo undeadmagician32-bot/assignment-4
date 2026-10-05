@@ -1,0 +1,66 @@
+name: Verify, collect and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      collect:
+        description: 'Collect one real ISS reading now'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '25 0 * * *'   # 09:25 KST. 지연될 수 있어 실제 조회 시각을 따로 저장한다.
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      collect_failed: ${{ steps.collect.outcome == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: main, fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - run: node scripts/verify-assets.mjs
+      - run: node --test
+      - name: Collect real daily reading
+        id: collect
+        if: github.event_name == 'schedule' || inputs.collect == true
+        continue-on-error: true
+        run: node scripts/collect.mjs
+      - name: Commit records (success or failure status)
+        if: github.event_name == 'schedule' || inputs.collect == true
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data/records.json
+          git diff --cached --quiet || (git commit -m 'Record ISS collection outcome' && git push origin HEAD:main)
+      - run: node scripts/scan-secrets.mjs
+      - run: |
+          echo "{\"commit\":\"${GITHUB_SHA}\",\"repo\":\"${GITHUB_REPOSITORY}\"}" > build-info.json
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: . }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write }
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Fail loudly if collection failed (last-good data was still deployed)
+        if: needs.build.outputs.collect_failed == 'true'
+        run: exit 1
