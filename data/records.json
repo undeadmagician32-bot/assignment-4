@@ -1,0 +1,21 @@
+{
+  "schema": "iss-daily-v1",
+  "signal_id": "iss-altitude",
+  "last_attempt": { "at": "2026-10-05T06:05:36.223Z", "outcome": "success", "error_code": "none" },
+  "rows": [
+    {
+      "record_id": "iss-altitude-2026-10-05",
+      "signal_id": "iss-altitude",
+      "record_date": "2026-10-05",
+      "normalized_value": 430.01902770754,
+      "unit": "km",
+      "source_name": "Where the ISS at? (wheretheiss.at)",
+      "source_url": "https://api.wheretheiss.at/v1/satellites/25544",
+      "source_time": "2026-10-05T06:05:38.000Z",
+      "first_fetched_at": "2026-10-05T06:05:36.223Z",
+      "last_fetched_at": "2026-10-05T06:05:36.223Z",
+      "fetch_count": 1,
+      "raw": {"name":"iss","id":25544,"latitude":49.934850394758,"longitude":79.445953400962,"altitude":430.01902770754,"velocity":27567.193294012,"visibility":"daylight","footprint":4558.0885336017,"timestamp":1791180338,"daynum":2461318.753912,"solar_lat":-4.7514389021004,"solar_lon":85.709851303029,"units":"kilometers"}
+    }
+  ]
+}

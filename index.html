@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오늘의 ISS 고도 정보판</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='7' fill='%237BFDE3'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>오늘의 ISS 고도 정보판</h1>
+  <p class="lede">국제우주정거장(ISS)의 고도를 실제 공개 원천에서 조회하고, 하루 한 줄씩 기록해 어제와 비교합니다. 데이터가 오지 않으면 마지막 정상값을 지우지 않고 이유를 설명합니다.</p>
+  <nav><a href="#live">실제 조회</a><a href="#records">일별 기록</a><a href="#lab">수신 테스트</a><a href="#verify">확인 방법</a></nav>
+</header>
+<main>
+  <section id="live" aria-labelledby="h-live">
+    <h2 id="h-live">① 지금 값 <span id="live-badge" class="badge">조회 전</span></h2>
+    <div class="value-line"><span id="live-value" class="big">—</span><span id="live-unit" class="unit">km</span></div>
+    <p class="meaning">ISS가 지표면 위 몇 km 높이에서 도는지를 뜻합니다 (원천 필드 <code>altitude</code>, 단위 킬로미터). 약 400~430 km 사이에서 천천히 변합니다.</p>
+    <dl class="facts">
+      <dt>출처</dt><dd id="live-source">Where the ISS at? · <a href="https://api.wheretheiss.at/v1/satellites/25544" target="_blank" rel="noopener">api.wheretheiss.at/v1/satellites/25544</a></dd>
+      <dt>출처 시각 <small>(원천이 측정했다고 밝힌 시각)</small></dt><dd id="live-source-time">—</dd>
+      <dt>조회 시각 <small>(이 화면이 호출한 시각)</small></dt><dd id="live-fetched">—</dd>
+      <dt>기준 시간대</dt><dd>Asia/Seoul (KST, UTC+9) — 기록 날짜도 이 시간대로 나눕니다</dd>
+    </dl>
+    <div id="live-error" class="error" role="alert" hidden></div>
+    <button id="live-btn" type="button">새로 조회</button>
+    <p class="hint">이 버튼은 현재 값만 새로 보여 줍니다. 공개 일별 기록은 하루 한 번 자동 수집이 따로 남깁니다.</p>
+  </section>
+
+  <section id="records" aria-labelledby="h-rec">
+    <h2 id="h-rec">② 실제 일별 기록 <span id="rec-badge" class="badge">불러오는 중</span></h2>
+    <div id="rec-delta" class="delta"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>KST 날짜</th><th>고도</th><th>출처 시각 (KST)</th><th>조회 시각 (KST)</th><th>대조</th></tr></thead>
+      <tbody id="rec-body"></tbody>
+    </table></div>
+    <p id="rec-note" class="hint"></p>
+  </section>
+
+  <section id="lab" aria-labelledby="h-lab">
+    <h2 id="h-lab">③ 수신 테스트 <span class="badge syn">합성 시험값 · 실제 ISS 데이터 아님</span></h2>
+    <p>공개 합성 fixture(단위 <b>pt</b>, 가상 날짜 2026-08-24/25)를 재생합니다. 실패 버튼은 매번 <b>초기화 → D1-A(100) → D1-B(105) → 선택한 실패</b> 순서로 실행합니다. 실제 기록과 섞이지 않습니다.</p>
+    <div class="btns">
+      <button type="button" data-run="normal">정상 순서 (D1-A→D1-B→D2)</button>
+      <button type="button" data-run="timeout">느림 (timeout)</button>
+      <button type="button" data-run="auth-401">거절 401</button>
+      <button type="button" data-run="rate-429">호출 제한 429</button>
+      <button type="button" data-run="offline">오프라인</button>
+      <button type="button" data-run="schema-break">형식 변경</button>
+      <button type="button" data-run="reset" class="ghost">합성 초기화</button>
+    </div>
+    <div id="lab-out" class="lab" aria-live="polite"></div>
+    <button id="retry-btn" type="button" hidden>다시 시도 · 합성 복구 (T04-RECOVER-D2)</button>
+  </section>
+
+  <section id="verify" aria-labelledby="h-ver">
+    <h2 id="h-ver">④ 짧은 확인 방법</h2>
+    <ol class="checks">
+      <li><b>위치</b> — 이 주소의 ① 지금 값, ② 일별 기록, ③ 수신 테스트.</li>
+      <li><b>행동</b> — ③에서 실패 버튼 하나 → “다시 시도 · 합성 복구” → ②의 “원자료” 열기.</li>
+      <li><b>통과</b> — 실패 시 105 pt 유지·“오래된 값”·원인별 다른 설명, 복구 시 120 pt·fresh/none·2건. ②는 서로 다른 KST 날짜 2건이고 원자료=저장값=화면값, 변화값이 재계산과 같음.</li>
+      <li><b>안 될 때</b> — ①에 실패 원인과 마지막 정상값(“오래된 값”)이 보이고, ②가 1건이면 “두 번째 실제 날짜 대기 중”이 보임.</li>
+    </ol>
+    <h3>배포 자료 SHA-256 대조 <span id="hash-badge" class="badge">확인 중</span></h3>
+    <p class="hint">과제 package: <code id="pkg-id">—</code> · 이 화면이 fixture 9개를 내려받아 브라우저에서 해시를 계산하고 manifest와 비교합니다.</p>
+    <ul id="hash-list" class="hashes"></ul>
+  </section>
+</main>
+<footer>
+  <p>개인정보·비밀값 없음 — 원천은 키가 필요 없는 공개 API이며 모든 호출은 브라우저/수집 스크립트에서 직접 나갑니다.</p>
+  <p id="src-link">소스: <span>불러오는 중</span></p>
+</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
