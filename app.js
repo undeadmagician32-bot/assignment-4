@@ -1,4 +1,4 @@
-import { fetchIss, FetchFailure, EXPLAIN, formatKst, compare, resetState, runFixture } from './lib/core.js';
+import { fetchIss, FetchFailure, EXPLAIN, formatKst, compare, resetState, runFixture, classifySourceAge, describeSourceAge } from './lib/core.js';
 
 const $ = (id) => document.getElementById(id);
 const el = (tag, props = {}, ...kids) => {
@@ -14,12 +14,18 @@ const getJson = async (p) => { const r = await fetch(p, { cache: 'no-store' }); 
 /* ---------- ① 실제 조회 ---------- */
 let lastGoodLive = null; // { raw, reading } 마지막 정상 조회(이 화면에서)
 
-function renderLive(reading, stale) {
+function renderLive(reading, stale, age) {
   $('live-value').textContent = km(reading.normalized_value);
   $('live-unit').textContent = reading.unit;
   $('live-source-time').textContent = formatKst(reading.source_time) + ' (원천 timestamp)';
   $('live-fetched').textContent = formatKst(reading.fetched_at);
-  stale ? badge($('live-badge'), '오래된 값 · 마지막 정상값', 'stale') : badge($('live-badge'), '정상 · fresh', 'fresh');
+  const note = $('live-age');
+  if (stale) { badge($('live-badge'), '오래된 값 · 마지막 정상값', 'stale'); note.hidden = true; return; }
+  // 조회 성공이어도 원천 관측 시각이 오래됐거나 확인 불가면 fresh 로 보이지 않게 한다.
+  const d = describeSourceAge(age ?? classifySourceAge(reading.source_time, reading.fetched_at));
+  badge($('live-badge'), d.badge, d.cls);
+  note.textContent = d.note;
+  note.hidden = false;
 }
 
 function showLiveError(code, detail) {
@@ -40,7 +46,7 @@ async function liveFetch() {
     const res = await fetchIss({ online: navigator.onLine });
     lastGoodLive = res;
     $('live-error').hidden = true;
-    renderLive(res.reading, false);
+    renderLive(res.reading, false, classifySourceAge(res.reading.source_time, res.reading.fetched_at));
     btn.textContent = '새로 조회';
   } catch (e) {
     const code = e instanceof FetchFailure ? e.code : 'schema_error';

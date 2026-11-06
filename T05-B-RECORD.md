@@ -1,0 +1,21 @@
+# AI B 작업 기록
+
+- AI B 시작: 2026-11-06 23:08:26 KST (Asia/Seoul) — 사용자의 B 시작 메시지 시각
+- AI B 서비스: Claude Code (Anthropic), A와 다른 서비스. 모델 표시 ID는 저장소에 적지 않고 사용자에게 별도 전달
+- 제공받은 것: 이 저장소와 `T05-HANDOFF.md`(A 문서 그대로), 같은 최초 요청. 이전 대화 전문 없음
+- 시작 저장소 버전: `bfeca2bad3a97f57326866d16381e694414de36e` (main HEAD)
+- 시작 시 검사: `node --test` 21/21 PASS (T05-AGE 10/10, 기존 11/11)
+- 시간 상한 / 요청·호출 상한: 45분 / 8회
+- AI B 종료: 2026-11-06 23:09:58 KST (Asia/Seoul)
+- 요청·호출 수: 사용자 작업 요청 1회. 도구 호출 4회(저장소 연결 1, 셸 3: 복제·읽기·검사 / 구현·검사 / 기록·커밋·푸시)
+- 한 일: `lib/core.js`에 `formatAge`, `describeSourceAge` 추가(판정 API `classifySourceAge`는 그대로). `app.js` 실제 조회 성공 경로에서 `classifySourceAge(res.reading.source_time, res.reading.fetched_at)` 결과로 배지와 설명을 그림
+  - fresh: `정상 · fresh` + 관측 나이
+  - stale: `오래된 원천 관측 · N분 N초 전` + 과거 관측값이라는 설명 (조회 성공만으로 fresh 표시하지 않음)
+  - unknown: `시각 확인 불가 · 최신 여부 모름` + 판단 불가 설명
+  - `index.html`에 설명 칸 `#live-age` 1줄 추가. 조회 실패 시 기존 "오래된 값 · 마지막 정상값" 동작은 그대로
+- 보강 검사: `tests/assignment5-ui.test.mjs` 5개(문구 3상태, 나이 형식, 실제 조회 경로 연결)
+- 종료 시 검사: `node --test` 26/26 PASS. 고정 T05-AGE-01..10 10/10 PASS, 기존 11/11 PASS, 보강 5/5 PASS. 첫 실패 없음
+- 고정 검사 삭제·완화·기대값 변경: 0건 (`T05-AGE-CASES.json`, `tests/assignment5-age.test.mjs` 변경 없음)
+- 건드리지 않은 것: `contract/`, `fixtures/`, `data/records.json`, `scripts/`(비밀값 검사 포함), 합성 수신 테스트 동작
+- 종료 저장소 버전: 이 기록을 포함한 main 커밋 (`git log -1 -- T05-B-RECORD.md`)
+- 남은 일: 브라우저에서 실제 ISS 응답으로 배지·설명이 보이는지 사람이 확인하는 일(이번 세션은 Node 검사만 실행). stale/unknown 화면은 실제 API가 보통 최신값을 주므로 직접 보기 어렵고, 검사로만 확인함
