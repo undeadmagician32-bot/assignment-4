@@ -1,0 +1,26 @@
+{
+  "feature": "Distinguish an old ISS source observation from a newly fetched response",
+  "api_contract": {
+    "function": "classifySourceAge(sourceTime, fetchedAt, maxAgeSeconds = 300)",
+    "valid_result": "{ state: 'fresh' | 'stale', age_seconds: integer }",
+    "unknown_result": "{ state: 'unknown', age_seconds: null }",
+    "rules": [
+      "Timestamps must be parseable date-time strings and maxAgeSeconds must be a finite non-negative number.",
+      "A source time after fetchedAt is unknown, not fresh.",
+      "Age is floored to whole seconds for reporting; freshness compares the exact millisecond difference to the threshold.",
+      "Age at or below the threshold is fresh; age above it is stale."
+    ]
+  },
+  "cases": [
+    {"id":"T05-AGE-01","input":{"sourceTime":"2026-11-06T12:55:00.000Z","fetchedAt":"2026-11-06T13:00:00.000Z"},"expected":{"state":"fresh","age_seconds":300}},
+    {"id":"T05-AGE-02","input":{"sourceTime":"2026-11-06T12:55:01.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"fresh","age_seconds":299}},
+    {"id":"T05-AGE-03","input":{"sourceTime":"2026-11-06T12:54:59.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"stale","age_seconds":301}},
+    {"id":"T05-AGE-04","input":{"sourceTime":"2026-11-06T13:00:00.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"fresh","age_seconds":0}},
+    {"id":"T05-AGE-05","input":{"sourceTime":"2026-11-06T13:00:01.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"unknown","age_seconds":null}},
+    {"id":"T05-AGE-06","input":{"sourceTime":"not-a-date","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"unknown","age_seconds":null}},
+    {"id":"T05-AGE-07","input":{"sourceTime":"2026-11-06T12:59:00.000Z","fetchedAt":"not-a-date","maxAgeSeconds":300},"expected":{"state":"unknown","age_seconds":null}},
+    {"id":"T05-AGE-08","input":{"sourceTime":null,"fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":300},"expected":{"state":"unknown","age_seconds":null}},
+    {"id":"T05-AGE-09","input":{"sourceTime":"2026-11-06T12:59:59.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":0},"expected":{"state":"stale","age_seconds":1}},
+    {"id":"T05-AGE-10","input":{"sourceTime":"2026-11-06T12:59:59.000Z","fetchedAt":"2026-11-06T13:00:00.000Z","maxAgeSeconds":-1},"expected":{"state":"unknown","age_seconds":null}}
+  ]
+}
