@@ -1,0 +1,40 @@
+{
+  "phase": "AI A handoff",
+  "source": {
+    "public_repository": "https://github.com/undeadmagician32-bot/assignment-4",
+    "upstream_start_commit": "58ed46cb4d3b787e8ba444b00f2b4cd8e3e12e47",
+    "frozen_start_commit": "f899a410c0b1a1e888ae5cf83f9de0fbc90384a0",
+    "ai_a_end_code_commit": "db106a80aa2d1941176466453d19e15667ea2a27"
+  },
+  "fixed_suite": {
+    "file": "T05-AGE-CASES.json",
+    "count": 10,
+    "case_results": [
+      {"id":"T05-AGE-01","result":"PASS"},
+      {"id":"T05-AGE-02","result":"PASS"},
+      {"id":"T05-AGE-03","result":"PASS"},
+      {"id":"T05-AGE-04","result":"PASS"},
+      {"id":"T05-AGE-05","result":"PASS"},
+      {"id":"T05-AGE-06","result":"PASS"},
+      {"id":"T05-AGE-07","result":"PASS"},
+      {"id":"T05-AGE-08","result":"PASS"},
+      {"id":"T05-AGE-09","result":"PASS"},
+      {"id":"T05-AGE-10","result":"PASS"}
+    ],
+    "original_project_tests": {"passed":11,"failed":0},
+    "combined_tests": {"passed":21,"failed":0},
+    "new_folder_reproduction": {"path":"work/assignment-4-a-repro","head":"db106a80aa2d1941176466453d19e15667ea2a27","command":"node --test","passed":21,"failed":0},
+    "fixed_cases_changed": 0,
+    "fixed_cases_deleted": 0
+  },
+  "usage": {
+    "planned_stop_scope": "Core age classification and fixed tests complete; UI wiring handed off",
+    "time_limit_minutes": 45,
+    "start_time_kst": "2026-11-06 22:10:23",
+    "end_time_kst": "2026-11-06 22:20:01",
+    "actual_time": "00:09:38",
+    "request_limit": 8,
+    "actual_ai_task_requests": 2,
+    "counting_note": "Counts task prompts sent to the AI; local shell/test tool calls are not model requests."
+  }
+}
